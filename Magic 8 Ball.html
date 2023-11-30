@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+    #ball {
+        position: fixed;
+        width: 300px;
+        height: 300px;
+        background-color: black;
+        border-radius: 50%;
+    }
+    #circle {
+        position: absolute;
+        background-color: white;
+        border-radius: 50%;
+        width: 150px;
+        height: 150px;
+        top: 25%;
+        right: 25%;
+    }
+    #triangle {
+        display: none;
+        position: absolute;
+        width: 0px;
+        height: 0px;
+        border-left: 95px solid transparent;
+	    border-right: 95px solid transparent;
+	    border-top: 170px solid hsl(220, 100%, 20%);
+        top: 30%;
+        right: 20%;
+    }
+    #text {
+        position: absolute;
+        color: black;
+        top: 11%;
+        right: 44%;
+        font-size: 75px;
+        font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+        user-select: none;
+    }
+    #prediction {
+        position: absolute;
+        display: none;
+        margin: auto;
+        top: 35%;
+        right: 30%;
+        color: hsl(200, 100%, 80%);
+        width: 100px;
+        text-wrap: wrap;
+        font-family: Verdana, Geneva, Tahoma, sans-serif;
+    }
+</style>
+</head>
+<body>
+    <h2>Magic 8 Ball</h2>
+    <p>Ask a yes/no question, click the ball, and receive your answer!</p>
+    <div id="ball" onclick="answer()">
+        <div id="circle"></div>
+        <div id="triangle"></div>
+        <p id="text">8</p>
+        <p id="prediction"></p>
+    </div>
+
+<script>
+    let state = 0;
+    const responses = ["IT IS CERTAIN","IT IS DECIDEDLY SO","WITHOUT A DOUBT","YES DEFINITELY","YOU MAY RELY ON IT","AS I SEE IT, YES","MOST LIKELY","OUTLOOK GOOD","YES",
+    "SIGNS POINT TO YES","REPLY HAZY, TRY AGAIN", "ASK AGAIN LATER","BETTER NOT TELL YOU NOW","CANNOT PREDICT NOW","CONCENTRATE AND ASK AGAIN","DON'T COUNT ON IT",
+    "MY REPLY IS NO","MY SOURCES SAY NO","OUTLOOK NOT SO GOOD","VERY DOUBTFUL"];
+    function answer() {
+        if (state == 0) {
+            state = 1;
+            document.getElementById("circle").style.display="none";
+            document.getElementById("text").style.display="none";
+            document.getElementById("triangle").style.display="block";
+            document.getElementById("prediction").style.display="block";
+            document.getElementById("prediction").innerHTML = responses[Math.floor(Math.random() * 20)];
+        } else {
+            state = 0;
+            document.getElementById("circle").style.display="block";
+            document.getElementById("text").style.display="block";
+            document.getElementById("triangle").style.display="none";
+            document.getElementById("prediction").style.display="none";
+        }
+    }
+</script>
+</body>
+</html>
