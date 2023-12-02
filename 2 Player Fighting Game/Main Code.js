@@ -7,7 +7,9 @@ const gravity = 0.7
 
 const background = new Sprite({ position:{x:-10,y:0}, imageSrc: 'Background.svg', scale: 2})
 const player = new Fighter({ position:{x:100,y:10}, velocity:{x:0,y:0}, offset:{x:0,y:20}, imageSrc: 'Perma_idle.svg', 
-frames: 5, scale: 2, offset:{x:200,y:0} })
+frames: 5, scale: 2, offset:{x:100,y:20}, sprites:{idle:{imageSrc:'Perma_idle.svg',frames:5}, 
+run:{imageSrc:'Perma_run.svg',frames:9}, jump:{imageSrc:'Perma_jump.svg',frames:1}, fall:{imageSrc:'Perma_fall.svg',frames:1},
+attack1:{imageSrc:'Perma_attack1.svg',frames:6}} })
 
 const enemy = new Fighter({ position:{x:900,y:10}, velocity:{x:0,y:0},color: 'orange', offset:{x:-50,y:20} })
 
@@ -22,17 +24,26 @@ function animate() {
     background.update()
     player.update()
     //enemy.update()
-
     player.velocity.x = 0;
-    if(keys.a.pressed && player.lastKey === 'a' ) {
+    if(keys.a.pressed && player.lastKey == 'a' ) {
         player.velocity.x = -5
-    } else if(keys.d.pressed && player.lastKey === 'd') {
+        player.switchSprite('run')
+    } else if(keys.d.pressed && player.lastKey == 'd') {
         player.velocity.x = 5
+        player.switchSprite('run')
+    } else {
+        player.switchSprite('idle')
+    }
+    if(player.velocity.y < 0) {
+        player.switchSprite('jump')
+    }
+    if(player.velocity.y > 0) {
+        player.switchSprite('fall')
     }
     enemy.velocity.x = 0;
-    if(keys.ArrowLeft.pressed && enemy.lastKey === 'ArrowLeft' ) {
+    if(keys.ArrowLeft.pressed && enemy.lastKey == 'ArrowLeft' ) {
         enemy.velocity.x = -5
-    } else if(keys.ArrowRight.pressed && enemy.lastKey === 'ArrowRight') {
+    } else if(keys.ArrowRight.pressed && enemy.lastKey == 'ArrowRight') {
         enemy.velocity.x = 5
     }
     //detect collision
@@ -65,7 +76,7 @@ window.addEventListener('keydown', (event) => {
             player.lastKey = 'a'
             break
         case 'w':
-            player.velocity.y = -20
+            player.velocity.y = -18
             break
         case ' ':
             player.attack()
@@ -80,7 +91,7 @@ window.addEventListener('keydown', (event) => {
             enemy.lastKey = 'ArrowLeft'
             break
         case 'ArrowUp':
-            enemy.velocity.y = -20
+            enemy.velocity.y = -18
             break
         case '0':
             enemy.attack()
