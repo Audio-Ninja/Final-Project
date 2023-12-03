@@ -7,9 +7,9 @@ const gravity = 0.7
 
 const background = new Sprite({ position:{x:-10,y:0}, imageSrc: 'Background.svg', scale: 2})
 const player = new Fighter({ position:{x:100,y:10}, velocity:{x:0,y:0}, offset:{x:0,y:20}, imageSrc: 'Perma_idle.svg', 
-frames: 5, scale: 2, offset:{x:100,y:20}, sprites:{idle:{imageSrc:'Perma_idle.svg',frames:5}, 
-run:{imageSrc:'Perma_run.svg',frames:9}, jump:{imageSrc:'Perma_jump.svg',frames:1}, fall:{imageSrc:'Perma_fall.svg',frames:1},
-attack1:{imageSrc:'Perma_attack1.svg',frames:6}} })
+frames: 5, scale: 2, offset:{x:100,y:20}, sprites:{idle:{imageSrc:'Perma_idle.svg',frames:5, framesHold:5}, 
+run:{imageSrc:'Perma_run.svg',frames:9,framesHold:2}, jump:{imageSrc:'Perma_jump.svg',frames:1}, fall:{imageSrc:'Perma_fall.svg',frames:1},
+attack:{imageSrc:'Perma_attack.svg',frames:7, framesHold:5}} })
 
 const enemy = new Fighter({ position:{x:900,y:10}, velocity:{x:0,y:0},color: 'orange', offset:{x:-50,y:20} })
 

@@ -37,7 +37,7 @@ class Sprite {
 }
 
 class Fighter extends Sprite {
-    constructor({position, velocity, color = 'cyan', imageSrc, scale = 1, frames = 1, offset = {x:0,y:0}, sprites}) {
+    constructor({position, velocity, color = 'cyan', imageSrc, scale = 1, frames = 1, offset = {x:0,y:0}, sprites, framesHold}) {
         super({position, imageSrc, scale, frames, offset})
         this.velocity = velocity
         this.width = 50
@@ -49,7 +49,7 @@ class Fighter extends Sprite {
         this.health = 100
         this.currentFrame = 0
         this.framesElapsed = 0
-        this.framesHold = 5
+        this.framesHold = framesHold
         this.sprites = sprites
 
         for (const sprite in this.sprites) {
@@ -70,19 +70,20 @@ class Fighter extends Sprite {
         } else this.velocity.y += gravity
     }
     attack() {
-        this.switchSprite('attack1')
+        this.switchSprite('attack')
         this.isAttacking = true
         setTimeout(() => {
             this.isAttacking = false
         }, 100)
     }
     switchSprite(sprite) {
-        if(this.image == this.sprites.attack1.image && this.currentFrame < this.sprites.attack1.frames - 1) return
+        if(this.image == this.sprites.attack.image && this.currentFrame + 1 < this.sprites.attack.frames) return
         switch(sprite) {
             case 'idle':
                 if(this.image != this.sprites.idle.image) {
                     this.image = this.sprites.idle.image
                     this.frames = this.sprites.idle.frames
+                    this.framesHold = this.sprites.idle.framesHold
                     this.currentFrame = 0
                 }
                 break
@@ -90,6 +91,7 @@ class Fighter extends Sprite {
                 if(this.image != this.sprites.run.image) {
                     this.image = this.sprites.run.image
                     this.frames = this.sprites.run.frames
+                    this.framesHold = this.sprites.run.framesHold
                     this.currentFrame = 0
                 }
                 break
@@ -97,6 +99,7 @@ class Fighter extends Sprite {
                 if(this.image != this.sprites.jump.image) {
                     this.image = this.sprites.jump.image
                     this.frames = this.sprites.jump.frames
+                    this.framesHold = this.sprites.jump.framesHold
                     this.currentFrame = 0 
                 }
                 break
@@ -104,13 +107,15 @@ class Fighter extends Sprite {
                 if(this.image != this.sprites.fall.image) {
                     this.image = this.sprites.fall.image
                     this.frames = this.sprites.fall.frames
+                    this.framesHold = this.sprites.fall.framesHold
                     this.currentFrame = 0 
                 }
                 break
-            case 'attack1':
-                if(this.image != this.sprites.attack1.image) {
-                    this.image = this.sprites.attack1.image
-                    this.frames = this.sprites.attack1.frames
+            case 'attack':
+                if(this.image != this.sprites.attack.image) {
+                    this.image = this.sprites.attack.image
+                    this.frames = this.sprites.attack.frames
+                    this.framesHold = this.sprites.attack.framesHold
                     this.currentFrame = 0 
                 }
                 break
