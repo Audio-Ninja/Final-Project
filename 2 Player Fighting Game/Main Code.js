@@ -11,7 +11,10 @@ frames: 5, scale: 2, offset:{x:100,y:20}, sprites:{idle:{imageSrc:'Perma_idle.sv
 run:{imageSrc:'Perma_run.svg',frames:9,framesHold:2}, jump:{imageSrc:'Perma_jump.svg',frames:1}, fall:{imageSrc:'Perma_fall.svg',frames:1},
 attack:{imageSrc:'Perma_attack.svg',frames:7, framesHold:5}} })
 
-const enemy = new Fighter({ position:{x:900,y:10}, velocity:{x:0,y:0},color: 'orange', offset:{x:-50,y:20} })
+const enemy = new Fighter({ position:{x:600,y:10}, velocity:{x:0,y:0},color: 'orange', offset:{x:-50,y:20}, imageSrc: 'Lightez_idle.svg', 
+frames: 5, scale: 2, offset:{x:100,y:20}, sprites:{idle:{imageSrc:'Lightez_idle.svg',frames:5, framesHold:5}, 
+run:{imageSrc:'Lightez_run.svg',frames:9,framesHold:2}, jump:{imageSrc:'Lightez_jump.svg',frames:1}, fall:{imageSrc:'Lightez_fall.svg',frames:1},
+attack:{imageSrc:'Lightez_attack.svg',frames:7, framesHold:5}} })
 
 const keys = {a:{pressed: false}, d:{pressed: false}, ArrowRight:{pressed: false}, ArrowLeft:{pressed: false}}
 
@@ -23,7 +26,7 @@ function animate() {
     c.fillRect(0,0,canvas.width,canvas.height)
     background.update()
     player.update()
-    //enemy.update()
+    enemy.update()
     player.velocity.x = 0;
     if(keys.a.pressed && player.lastKey == 'a' ) {
         player.velocity.x = -5
@@ -43,8 +46,18 @@ function animate() {
     enemy.velocity.x = 0;
     if(keys.ArrowLeft.pressed && enemy.lastKey == 'ArrowLeft' ) {
         enemy.velocity.x = -5
+        enemy.switchSprite('run')
     } else if(keys.ArrowRight.pressed && enemy.lastKey == 'ArrowRight') {
         enemy.velocity.x = 5
+        enemy.switchSprite('run')
+    } else {
+        enemy.switchSprite('idle')
+    }
+    if(enemy.velocity.y < 0) {
+        enemy.switchSprite('jump')
+    }
+    if(enemy.velocity.y > 0) {
+        enemy.switchSprite('fall')
     }
     //detect collision
     if(player.isAttacking && rectangularCollision({rect1: player, rect2: enemy})) {
