@@ -37,13 +37,14 @@ class Sprite {
 }
 
 class Fighter extends Sprite {
-    constructor({position, velocity, color = 'cyan', imageSrc, scale = 1, frames = 1, offset = {x:0,y:0}, sprites, framesHold}) {
+    constructor({position, velocity, color = 'cyan', imageSrc, scale = 1, frames = 1, offset = {x:0,y:0}, sprites, framesHold, 
+    attackBox = {offset: {}, width: undefined, height: undefined}}) {
         super({position, imageSrc, scale, frames, offset})
         this.velocity = velocity
         this.width = 50
         this.height = 150
         this.lastKey
-        this.attackBox = {position: {x: this.position.x, y: this.position.y}, offset, width: 100, height: 50}
+        this.attackBox = {position: {x: this.position.x, y: this.position.y}, offset: attackBox.offset, width: attackBox.width, height: attackBox.height}
         this.color = color
         this.isAttacking
         this.health = 100
@@ -62,6 +63,9 @@ class Fighter extends Sprite {
         this.animateFrames()
         this.attackBox.position.x = this.position.x + this.attackBox.offset.x
         this.attackBox.position.y = this.position.y + this.attackBox.offset.y
+
+        //c.fillRect(this.attackBox.position.x, this.attackBox.position.y, this.attackBox.width, this.attackBox.height)
+
         this.position.x += this.velocity.x
         this.position.y += this.velocity.y
         if(this.position.y + this.height + this.velocity.y >= canvas.height - 106) {
@@ -72,11 +76,13 @@ class Fighter extends Sprite {
     attack() {
         this.switchSprite('attack')
         this.isAttacking = true
-        setTimeout(() => {
-            this.isAttacking = false
-        }, 100)
+    }
+    takeHit() {
+        this.switchSprite('hurt')
+        this.health -= 5;
     }
     switchSprite(sprite) {
+        //override all other animations when attacking
         if(this.image == this.sprites.attack.image && this.currentFrame + 1 < this.sprites.attack.frames) return
         switch(sprite) {
             case 'idle':
