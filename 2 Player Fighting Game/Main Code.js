@@ -24,7 +24,6 @@ decreaseTimer()
 
 function animate() {
     window.requestAnimationFrame(animate)
-    c.fillRect(0,0,canvas.width,canvas.height)
     background.update()
     player.update()
     enemy.update()
