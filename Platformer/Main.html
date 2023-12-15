@@ -1,10 +1,36 @@
 <!DOCTYPE html>
 <head>
 <title>Platformer Game</title>
+<style>
+    * {
+        box-sizing: border-box;
+    }
+    body {
+        background-color: lightslategray;
+    }
+    div {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    h1, p {
+        text-align: center;
+        font-family: sans-serif;
+        color: white;
+        text-shadow: 0 0 15px #000000;
+    }
+    p {
+        font-weight: bold;
+    }
+</style>
 </head>
 <html>
 <body>
-    <canvas width="1024" height="576"></canvas>
+    <h1>Platformer Game</h1>
+    <p>Move with WASD or arrow keys</p>
+    <div>
+        <canvas></canvas>
+    </div>
     <script src="Code.js"></script>
 </body>
 </html>
