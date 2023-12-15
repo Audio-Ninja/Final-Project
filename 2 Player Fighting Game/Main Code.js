@@ -18,7 +18,6 @@ attack:{imageSrc:'Lightez_attack.svg',frames:7,framesHold:5}}, hurt:{imageSrc:'L
 attackBox:{offset:{x:-130,y:40}, width: 160, height: 50} })
 
 const keys = {a:{pressed: false}, d:{pressed: false}, ArrowRight:{pressed: false}, ArrowLeft:{pressed: false}}
-
 decreaseTimer()
 
 function animate() {
@@ -61,7 +60,7 @@ function animate() {
     //detect collision for enemy
     if(rectangularCollision({rect1: player, rect2: enemy}) && player.currentFrame == 3) {
         player.isAttacking = false
-        enemy.health -= 10;
+        enemy.health -= 5;
         document.querySelector("#enemyHealth").style.width = enemy.health + '%'
     }
     //if player misses
@@ -71,7 +70,7 @@ function animate() {
     //detect collision for player
     if(rectangularCollision({rect1: enemy, rect2: player}) && enemy.currentFrame == 3) {
         enemy.isAttacking = false
-        player.health -= 10;
+        player.health -= 5;
         document.querySelector("#playerHealth").style.width = player.health + '%'
     }
     //if enemy misses

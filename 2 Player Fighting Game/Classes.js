@@ -75,10 +75,6 @@ class Fighter extends Sprite {
         this.switchSprite('attack')
         this.isAttacking = true
     }
-    takeHit() {
-        this.switchSprite('hurt')
-        this.health -= 5;
-    }
     switchSprite(sprite) {
         //override all other animations when attacking
         if(this.image == this.sprites.attack.image && this.currentFrame + 1 < this.sprites.attack.frames) return
