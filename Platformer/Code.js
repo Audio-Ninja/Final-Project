@@ -4,7 +4,7 @@ canvas.width = 1024;
 canvas.height = 576;
 const gravity = 0.7;
 let scrollX = 0, scrollY = 0, playerDirection = "right";
-const level = [-600,2700,450,800, 1480,1630,335,450, 1700,1850,225,450];
+const level = [-600,3700,450,800, 1095,1180,335,450, 1300,1390,225,450, 1390,1485,335,450];
 
 class Sprite {
     constructor({position, imageSrc, scale = 1, scrollSpeed = 1,frames = 1, offset = {x:0,y:0}}) {
@@ -75,8 +75,17 @@ class Player extends Sprite {
         this.animate();
         this.position.x = (this.position.x + scrollX / this.scrollSpeed) - 512;
         this.air++;
-        this.position.x += this.velocity.x;
         this.position.y += this.velocity.y;
+        if(this.position.y > 1000) {
+            this.position.x = -200;
+            this.position.y = 100;
+            this.velocity.x = 0;
+            this.velocity.y = 0;
+            this.acceleration = 0;
+            this.air = 99;
+            scrollX = 0;
+            scrollY = 0;
+        }
         scrollX = this.position.x;
         if(scrollX < 0) {
             scrollX = 0;
@@ -85,9 +94,8 @@ class Player extends Sprite {
             scrollX = 4000;
         }
         for(let i = 0; i < level.length; i+=4) {
-            if(this.position.x > level[i] && this.position.x + this.width < level[i+1] &&
+            if(this.position.x + this.width > level[i] && this.position.x < level[i+1] &&
                 this.position.y + this.height > level[i+2] && this.position.y < level[i+3]) {
-                console.log("collision")
                 if(this.velocity.y > 0) {
                     this.air = 0;
                     this.velocity.y = 0;
@@ -172,13 +180,29 @@ class Player extends Sprite {
                 break
         }
     }
+    collisionX() {
+        this.position.x += this.velocity.x;
+        for(let i = 0; i < level.length; i+=4) {
+            if(this.position.x + this.width > level[i] && this.position.x < level[i+1] &&
+                this.position.y + this.height > level[i+2] && this.position.y < level[i+3]) {
+                if(this.velocity.x > 0) {
+                    this.velocity.x = 0;
+                    this.position.x = level[i] - this.width;
+                }
+                if(this.velocity.x < 0) {
+                    this.velocity.x = 0;
+                    this.position.x = level[i+1];
+                }
+            }
+        }
+    }
 }
 
 const sky = new Sprite({position:{x:-10,y:-200}, imageSrc: 'Sky.svg', scale: 2, scrollSpeed: 5});
-const hills = new Sprite({position:{x:-60,y:280}, imageSrc: 'Hills.svg', scale: 2, scrollSpeed: 2});
+const hills = new Sprite({position:{x:-60,y:285}, imageSrc: 'Hills.svg', scale: 2, scrollSpeed: 2});
 const ground = new Sprite({position:{x:-10,y:216}, imageSrc: 'Ground.svg', scale: 2});
 const player = new Player({ position:{x:-200,y:100}, velocity:{x:0,y:0}, acceleration: 0, imageSrc:'idle.svg', frames: 5, scale: 2, offset:{x:100,y:20},
-air: 0, sprites:{idle:{imageSrc:'idle.svg',frames:5,framesHold:5}, idleLeft:{imageSrc:'idle-left.svg',frames:5,framesHold:5}, run:{imageSrc:'run.svg',frames:9,framesHold:2},
+air: 99, sprites:{idle:{imageSrc:'idle.svg',frames:5,framesHold:5}, idleLeft:{imageSrc:'idle-left.svg',frames:5,framesHold:5}, run:{imageSrc:'run.svg',frames:9,framesHold:2},
 runLeft:{imageSrc:'run-left.svg',frames:9,framesHold:2}, jump:{imageSrc:'jump.svg',frames:1}, jumpLeft:{imageSrc:'jump-left.svg',frames:1},
 fall:{imageSrc:'fall.svg',frames:1}, fallLeft:{imageSrc:'fall-left.svg',frames:1}} });
 
@@ -212,6 +236,7 @@ function gameLoop() {
     }
     player.velocity.x += player.acceleration;
     player.velocity.x *= 0.94;
+    player.collisionX();
 }
 
 gameLoop()
