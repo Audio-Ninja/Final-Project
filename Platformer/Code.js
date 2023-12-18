@@ -7,7 +7,7 @@ let scrollX = 0, scrollY = 0, playerDirection = "right";
 const level = [-600,3700,450,800, 1095,1180,335,450, 1300,1390,225,450, 1390,1485,335,450];
 
 class Sprite {
-    constructor({position, imageSrc, scale = 1, scrollSpeed = 1,frames = 1, offset = {x:0,y:0}}) {
+    constructor({position, imageSrc, scale = 1, scrollSpeed = 1, frames = 1, offset = {x:0,y:0}}) {
         this.position = position;
         this.width;
         this.height;
@@ -47,17 +47,16 @@ class Sprite {
     }
 }
 class Player extends Sprite {
-    constructor({position, velocity, acceleration, imageSrc, scale = 1, frames = 1, offset = {x:0,y:0}, air, sprites, framesHold = 5}) {
-        super({position, imageSrc, scale, frames, offset});
-        this.velocity = velocity;
-        this.acceleration = acceleration;
+    constructor({position, imageSrc, scale = 1, frames = 1, offset = {x:0,y:0}, sprites, framesHold = 5}) {
+        super({position, imageSrc, scale, frames, offset, framesHold});
+        this.velocity = {x:0,y:0};
+        this.acceleration = 0;
         this.width = 50;
         this.height = 150;
         this.health = 100;
         this.currentFrame = 0;
         this.framesElapsed = 0;
-        this.framesHold = framesHold;
-        this.air = air;
+        this.air = 99;
         this.sprites = sprites;
 
         for (const sprite in this.sprites) {
@@ -78,7 +77,7 @@ class Player extends Sprite {
         this.position.y += this.velocity.y;
         if(this.position.y > 1000) {
             this.position.x = -200;
-            this.position.y = 100;
+            this.position.y = 200;
             this.velocity.x = 0;
             this.velocity.y = 0;
             this.acceleration = 0;
@@ -197,14 +196,52 @@ class Player extends Sprite {
         }
     }
 }
+class Slime extends Sprite {
+    constructor({position, velocity, imageSrc, scale = 1, frames = 6, offset = {x:0,y:0}, sprites, framesHold = 10}) {
+        super({position, imageSrc, scale, frames, offset, framesHold});
+        this.velocity = velocity;
+        this.width = 80;
+        this.height = 60;
+        this.squished = false;
+        this.currentFrame = 0;
+        this.framesElapsed = 0;
+        this.sprites = sprites;
+
+        for (const sprite in this.sprites) {
+            sprites[sprite].image = new Image();
+            sprites[sprite].image.src = sprites[sprite].imageSrc;
+        }
+    }
+    tick() {
+        this.position.x -= scrollX / this.scrollSpeed;
+        this.draw();
+        this.animate();
+        this.position.x += scrollX / this.scrollSpeed;
+        this.position.x += this.velocity;
+        for(let i = 0; i < level.length; i+=4) {
+            if(this.position.x + this.width > level[i] && this.position.x < level[i+1] &&
+                this.position.y + this.height > level[i+2] && this.position.y < level[i+3] ||
+                this.position.x + this.width > level[i+1] - 50 && this.position.x < level[i+1] && 
+                this.position.y < level[i+2] && this.position.y + this.height > level[i+2] - 50 ||
+                this.position.x < level[i] + 50 && this.position.x + this.width > level[i] && 
+                this.position.y < level[i+2] && this.position.y + this.height > level[i+2] - 50) {
+                    this.velocity *= -1;
+                    this.position.x += this.velocity;
+            }
+        }
+    }
+}
 
 const sky = new Sprite({position:{x:-10,y:-200}, imageSrc: 'Sky.svg', scale: 2, scrollSpeed: 5});
 const hills = new Sprite({position:{x:-60,y:285}, imageSrc: 'Hills.svg', scale: 2, scrollSpeed: 2});
 const ground = new Sprite({position:{x:-10,y:216}, imageSrc: 'Ground.svg', scale: 2});
-const player = new Player({ position:{x:-200,y:100}, velocity:{x:0,y:0}, acceleration: 0, imageSrc:'idle.svg', frames: 5, scale: 2, offset:{x:100,y:20},
-air: 99, sprites:{idle:{imageSrc:'idle.svg',frames:5,framesHold:5}, idleLeft:{imageSrc:'idle-left.svg',frames:5,framesHold:5}, run:{imageSrc:'run.svg',frames:9,framesHold:2},
+const player = new Player({ position:{x:-200,y:200}, imageSrc:'idle.svg', frames: 5, scale: 2, offset:{x:100,y:20},
+sprites:{idle:{imageSrc:'idle.svg',frames:5,framesHold:5}, idleLeft:{imageSrc:'idle-left.svg',frames:5,framesHold:5}, run:{imageSrc:'run.svg',frames:9,framesHold:2},
 runLeft:{imageSrc:'run-left.svg',frames:9,framesHold:2}, jump:{imageSrc:'jump.svg',frames:1}, jumpLeft:{imageSrc:'jump-left.svg',frames:1},
 fall:{imageSrc:'fall.svg',frames:1}, fallLeft:{imageSrc:'fall-left.svg',frames:1}} });
+
+const enemy = new Slime( {position:{x:2600,y:383}, velocity: -2, imageSrc: 'Slime_move.svg', scale: 2, offset:{x:-500,y:20},
+sprites:{move:{imageSrc:'Slime_move.svg',frames:6,framesHold:10}} });
 
 const pressedKeys = {right: false, left: false};
 
@@ -214,6 +251,7 @@ function gameLoop() {
     hills.tick();
     ground.tick();
     player.tick();
+    enemy.tick();
     player.acceleration = 0;
     if(pressedKeys.right == false && pressedKeys.left == false){
         player.switchSprite('idle');
