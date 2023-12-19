@@ -5,6 +5,9 @@ canvas.height = 576;
 const gravity = 0.7;
 let scrollX = 0, scrollY = 0, playerDirection = "right";
 const level = [-600,3700,450,800, 1095,1180,335,450, 1300,1390,225,450, 1390,1485,335,450];
+let track = new Audio('GameTrack.ogg');
+let particles = [];
+let test = true;
 
 class Sprite {
     constructor({position, imageSrc, scale = 1, scrollSpeed = 1, frames = 1, offset = {x:0,y:0}}) {
@@ -28,6 +31,9 @@ class Sprite {
             this.image.width / this.frames,
             this.image.height, this.position.x - this.offset.x, this.position.y - this.offset.y, 
             (this.image.width / this.frames) * this.scale, this.image.height * this.scale);
+    }
+    altDraw() {
+        c.drawImage(this.image, 0, 0, this.image.width, this.image.height, this.position.x, this.position.y, this.image.width * this.scale, this.image.height * this.scale);
     }
     animate() {
         this.framesElapsed++
@@ -197,7 +203,7 @@ class Player extends Sprite {
     }
 }
 class Slime extends Sprite {
-    constructor({position, velocity, imageSrc, scale = 1, frames = 6, offset = {x:0,y:0}, sprites, framesHold = 10}) {
+    constructor({position, velocity, imageSrc, scale = 1, frames = 6, offset = {x:0,y:0}, sprites, framesHold = 8}) {
         super({position, imageSrc, scale, frames, offset, framesHold});
         this.velocity = velocity;
         this.width = 80;
@@ -213,21 +219,57 @@ class Slime extends Sprite {
         }
     }
     tick() {
-        this.position.x -= scrollX / this.scrollSpeed;
+        this.position.x -= scrollX;
         this.draw();
         this.animate();
-        this.position.x += scrollX / this.scrollSpeed;
-        this.position.x += this.velocity;
-        for(let i = 0; i < level.length; i+=4) {
-            if(this.position.x + this.width > level[i] && this.position.x < level[i+1] &&
-                this.position.y + this.height > level[i+2] && this.position.y < level[i+3] ||
-                this.position.x + this.width > level[i+1] - 50 && this.position.x < level[i+1] && 
-                this.position.y < level[i+2] && this.position.y + this.height > level[i+2] - 50 ||
-                this.position.x < level[i] + 50 && this.position.x + this.width > level[i] && 
-                this.position.y < level[i+2] && this.position.y + this.height > level[i+2] - 50) {
-                    this.velocity *= -1;
-                    this.position.x += this.velocity;
+        this.position.x += scrollX;
+        if(this.squished == false) {
+            this.position.x += this.velocity;
+            for(let i = 0; i < level.length; i+=4) {
+                if(this.position.x + this.width > level[i] && this.position.x < level[i+1] &&
+                    this.position.y + this.height > level[i+2] && this.position.y < level[i+3] ||
+                    this.position.x + this.width > level[i+1] - 50 && this.position.x < level[i+1] && 
+                    this.position.y < level[i+2] && this.position.y + this.height > level[i+2] - 50 ||
+                    this.position.x < level[i] + 50 && this.position.x + this.width > level[i] && 
+                    this.position.y < level[i+2] && this.position.y + this.height > level[i+2] - 50) {
+                        this.velocity *= -1;
+                        this.position.x += this.velocity;
+                }
             }
+            this.switchSprite('move');
+            if(player.position.x + player.width > this.position.x && player.position.x < this.position.x + this.width && player.velocity.y > 0
+                && player.position.y + player.height > this.position.y - 10 && player.position.y < this.position.y + 20 ) {
+                this.squished = true;
+                this.switchSprite('squished');
+                player.velocity.y = -16;
+                for(let i = 0; i < 5; i++) {
+                    particles.push(this.position.x);
+                    particles.push(this.position.y);
+                    particles.push(Math.floor(Math.random() * 17) - 8);
+                    particles.push(Math.floor(Math.random() * 4) - 10);
+                    particles.push(Math.floor(Math.random() * 30));
+                }
+            }
+        }
+    }
+    switchSprite(sprite) {
+        switch(sprite) {
+            case 'move':
+                if(this.image != this.sprites.move.image) {
+                    this.image = this.sprites.move.image;
+                    this.frames = this.sprites.move.frames;
+                    this.framesHold = this.sprites.move.framesHold;
+                    this.currentFrame = 0;
+                }
+                break
+            case 'squished':
+                if(this.image != this.sprites.squished.image) {
+                    this.image = this.sprites.squished.image;
+                    this.frames = this.sprites.squished.frames;
+                    this.framesHold = this.sprites.squished.framesHold;
+                    this.currentFrame = 0;
+                }
+                break
         }
     }
 }
@@ -241,17 +283,59 @@ runLeft:{imageSrc:'run-left.svg',frames:9,framesHold:2}, jump:{imageSrc:'jump.sv
 fall:{imageSrc:'fall.svg',frames:1}, fallLeft:{imageSrc:'fall-left.svg',frames:1}} });
 
 const enemy = new Slime( {position:{x:2600,y:383}, velocity: -2, imageSrc: 'Slime_move.svg', scale: 2, offset:{x:-500,y:20},
-sprites:{move:{imageSrc:'Slime_move.svg',frames:6,framesHold:10}} });
+sprites:{move:{imageSrc:'Slime_move.svg',frames:6,framesHold:8}, squished:{imageSrc:'Slime_squished.svg',frames:1}} });
 
 const pressedKeys = {right: false, left: false};
+
+function drawParticles() {
+    for(let i = 0; i < particles.length; i+=5) {
+        particles[i+3] += gravity;
+        particles[i+1] += particles[i+3];
+        for(let r = 0; r < level.length; r+=4) {
+            if(particles[i] + 20 > level[r] && particles[i] < level[r+1] &&
+                particles[i+1] + 20 > level[r+2] && particles[i+1] < level[r+3]) {
+                particles[i+3] *= -0.6;
+                particles[i+1] = level[r+2] - 20;
+            }
+        }
+        particles[i+2] *= 0.95;
+        particles[i] += particles[i+2];
+        for(let t = 0; t < level.length; t+=4) {
+            if(particles[i] + 20 > level[t] && particles[i] < level[t+1] &&
+                particles[i+1] + 20 > level[t+2] && particles[i+1] < level[t+3]) {
+                if(particles[i+2] > 0) {
+                    particles[i+2] = 0;
+                    particles[i] = level[t] - 20;
+                }
+                if(particles[i+2] < 0) {
+                    particles[i+2] = 0;
+                    particles[i] = level[t+1];
+                }
+            }
+        }
+        let img = new Image();
+        img.src = 'Slime_particle.svg';
+        particles[i] -= scrollX;
+        c.drawImage(img, 0, 0, img.width, img.height, particles[i] + 540, particles[i+1], img.width, img.height);
+        particles[i] += scrollX;
+        particles[i+4] += 1;
+        if(particles[i+4] == 150) {
+            particles.splice(i,5);
+        }
+    }
+}
 
 function gameLoop() {
     window.requestAnimationFrame(gameLoop);
     sky.tick();
     hills.tick();
     ground.tick();
-    player.tick();
     enemy.tick();
+    if(particles.length > 0) {
+        drawParticles();
+    }
+    player.tick();
+
     player.acceleration = 0;
     if(pressedKeys.right == false && pressedKeys.left == false){
         player.switchSprite('idle');
@@ -277,11 +361,12 @@ function gameLoop() {
     player.collisionX();
 }
 
-gameLoop()
+gameLoop();
 
 window.addEventListener('keydown', (event) => {
     if(event.key == 'd' || event.key == 'ArrowRight') {
         pressedKeys.right = true;
+        track.play();
     }
     if(event.key == 'a' || event.key == 'ArrowLeft') {
         pressedKeys.left = true;
