@@ -5,9 +5,14 @@ canvas.height = 576;
 const gravity = 0.7;
 let scrollX = 0, scrollY = 0, playerDirection = "right";
 const level = [-600,3700,450,800, 1095,1180,335,450, 1300,1390,225,450, 1390,1485,335,450];
-let track = new Audio('GameTrack.ogg');
+//let track = new Audio('GameTrack.ogg');
+let jump = new Audio('jump.wav');
+let squish = new Audio('squish.wav');
+let slimes = [2500,383,4,0,0,0,'Slime_move.svg',6];
+let slimeImg = new Image();
 let particles = [];
-let test = true;
+let particleImg = new Image();
+particleImg.src = 'Slime_particle.svg';
 
 class Sprite {
     constructor({position, imageSrc, scale = 1, scrollSpeed = 1, frames = 1, offset = {x:0,y:0}}) {
@@ -202,77 +207,6 @@ class Player extends Sprite {
         }
     }
 }
-class Slime extends Sprite {
-    constructor({position, velocity, imageSrc, scale = 1, frames = 6, offset = {x:0,y:0}, sprites, framesHold = 8}) {
-        super({position, imageSrc, scale, frames, offset, framesHold});
-        this.velocity = velocity;
-        this.width = 80;
-        this.height = 60;
-        this.squished = false;
-        this.currentFrame = 0;
-        this.framesElapsed = 0;
-        this.sprites = sprites;
-
-        for (const sprite in this.sprites) {
-            sprites[sprite].image = new Image();
-            sprites[sprite].image.src = sprites[sprite].imageSrc;
-        }
-    }
-    tick() {
-        this.position.x -= scrollX;
-        this.draw();
-        this.animate();
-        this.position.x += scrollX;
-        if(this.squished == false) {
-            this.position.x += this.velocity;
-            for(let i = 0; i < level.length; i+=4) {
-                if(this.position.x + this.width > level[i] && this.position.x < level[i+1] &&
-                    this.position.y + this.height > level[i+2] && this.position.y < level[i+3] ||
-                    this.position.x + this.width > level[i+1] - 50 && this.position.x < level[i+1] && 
-                    this.position.y < level[i+2] && this.position.y + this.height > level[i+2] - 50 ||
-                    this.position.x < level[i] + 50 && this.position.x + this.width > level[i] && 
-                    this.position.y < level[i+2] && this.position.y + this.height > level[i+2] - 50) {
-                        this.velocity *= -1;
-                        this.position.x += this.velocity;
-                }
-            }
-            this.switchSprite('move');
-            if(player.position.x + player.width > this.position.x && player.position.x < this.position.x + this.width && player.velocity.y > 0
-                && player.position.y + player.height > this.position.y - 10 && player.position.y < this.position.y + 20 ) {
-                this.squished = true;
-                this.switchSprite('squished');
-                player.velocity.y = -16;
-                for(let i = 0; i < 5; i++) {
-                    particles.push(this.position.x);
-                    particles.push(this.position.y);
-                    particles.push(Math.floor(Math.random() * 17) - 8);
-                    particles.push(Math.floor(Math.random() * 4) - 10);
-                    particles.push(Math.floor(Math.random() * 30));
-                }
-            }
-        }
-    }
-    switchSprite(sprite) {
-        switch(sprite) {
-            case 'move':
-                if(this.image != this.sprites.move.image) {
-                    this.image = this.sprites.move.image;
-                    this.frames = this.sprites.move.frames;
-                    this.framesHold = this.sprites.move.framesHold;
-                    this.currentFrame = 0;
-                }
-                break
-            case 'squished':
-                if(this.image != this.sprites.squished.image) {
-                    this.image = this.sprites.squished.image;
-                    this.frames = this.sprites.squished.frames;
-                    this.framesHold = this.sprites.squished.framesHold;
-                    this.currentFrame = 0;
-                }
-                break
-        }
-    }
-}
 
 const sky = new Sprite({position:{x:-10,y:-200}, imageSrc: 'Sky.svg', scale: 2, scrollSpeed: 5});
 const hills = new Sprite({position:{x:-60,y:285}, imageSrc: 'Hills.svg', scale: 2, scrollSpeed: 2});
@@ -282,10 +216,61 @@ sprites:{idle:{imageSrc:'idle.svg',frames:5,framesHold:5}, idleLeft:{imageSrc:'i
 runLeft:{imageSrc:'run-left.svg',frames:9,framesHold:2}, jump:{imageSrc:'jump.svg',frames:1}, jumpLeft:{imageSrc:'jump-left.svg',frames:1},
 fall:{imageSrc:'fall.svg',frames:1}, fallLeft:{imageSrc:'fall-left.svg',frames:1}} });
 
-const enemy = new Slime( {position:{x:2600,y:383}, velocity: -2, imageSrc: 'Slime_move.svg', scale: 2, offset:{x:-500,y:20},
-sprites:{move:{imageSrc:'Slime_move.svg',frames:6,framesHold:8}, squished:{imageSrc:'Slime_squished.svg',frames:1}} });
-
 const pressedKeys = {right: false, left: false};
+
+function drawSlimes() {
+    for(let i = 0; i < slimes.length; i+=8) {
+        slimes[i] -= scrollX;
+        slimeImg.src = slimes[i+6];
+        c.drawImage(slimeImg, slimes[i+4] * (slimeImg.width / slimes[i+7]), 0,
+            slimeImg.width / slimes[i+7], slimeImg.height, slimes[i] + 500, slimes[i+1] - 20, 
+            (slimeImg.width / slimes[i+7]) * 2, slimeImg.height * 2);
+        slimes[i+5]++;
+        if(slimes[i+5] % 6 == 0) {
+            if(slimes[i+4] < slimes[i+7] - 1) {
+                slimes[i+4]++;
+            } else {
+                slimes[i+4] = 0;
+            }
+        }
+        slimes[i] += scrollX;
+        if(slimes[i+3] == 0) {
+            slimes[i] += slimes[i+2];
+            for(let s = 0; s < level.length; s+=4) {
+                if(slimes[i] + 80 > level[s] && slimes[i] < level[s+1] &&
+                    slimes[i+1] + 60 > level[s+2] && slimes[i+1] < level[s+3] ||
+                    slimes[i] + 80 > level[s+1] - 50 && slimes[i] < level[s+1] && 
+                    slimes[i+1] < level[s+2] && slimes[i+1] + 60 > level[s+2] - 50 ||
+                    slimes[i] < level[s] + 50 && slimes[i] + 80 > level[s] && 
+                    slimes[i+1] < level[s+2] && slimes[i+1] + 60 > level[s+2] - 50) {
+                        slimes[i+2] *= -1;
+                        slimes[i] += slimes[i+2];
+                }
+            }
+            if(player.position.x + player.width > slimes[i] && player.position.x < slimes[i] + 80 && player.velocity.y > 0
+                && player.position.y + player.height > slimes[i+1] && player.position.y < slimes[i+1] + 20 ) {
+                slimes[i+3] = 1;
+                slimes[i+6] = 'Slime_squished.svg';
+                slimes[i+4] = 0;
+                slimes[i+7] = 1;
+                player.velocity.y = -16;
+                for(let p = 0; p < 5; p++) {
+                    particles.push(slimes[i]);
+                    particles.push(slimes[i+1]);
+                    particles.push(Math.random() * 17 - 8);
+                    particles.push(Math.random() * 4 - 10);
+                    particles.push(0);
+                    squish.play();
+                }
+            }
+        } else {
+            slimes[i+3]++;
+            if(slimes[i+3] == 120) {
+                slimes.splice(i,8);
+            }
+        } 
+    }
+}
 
 function drawParticles() {
     for(let i = 0; i < particles.length; i+=5) {
@@ -313,13 +298,11 @@ function drawParticles() {
                 }
             }
         }
-        let img = new Image();
-        img.src = 'Slime_particle.svg';
         particles[i] -= scrollX;
-        c.drawImage(img, 0, 0, img.width, img.height, particles[i] + 540, particles[i+1], img.width, img.height);
+        c.drawImage(particleImg, 0, 0, particleImg.width, particleImg.height, particles[i] + 540, particles[i+1], particleImg.width, particleImg.height);
         particles[i] += scrollX;
         particles[i+4] += 1;
-        if(particles[i+4] == 150) {
+        if(particles[i+4] == 120) {
             particles.splice(i,5);
         }
     }
@@ -330,7 +313,9 @@ function gameLoop() {
     sky.tick();
     hills.tick();
     ground.tick();
-    enemy.tick();
+    if(slimes.length > 0) {
+        drawSlimes();
+    }
     if(particles.length > 0) {
         drawParticles();
     }
@@ -366,7 +351,6 @@ gameLoop();
 window.addEventListener('keydown', (event) => {
     if(event.key == 'd' || event.key == 'ArrowRight') {
         pressedKeys.right = true;
-        track.play();
     }
     if(event.key == 'a' || event.key == 'ArrowLeft') {
         pressedKeys.left = true;
@@ -374,6 +358,7 @@ window.addEventListener('keydown', (event) => {
     if (player.air < 3) {
         if(event.key == 'w' || event.key == 'ArrowUp') {
             player.velocity.y = -16;
+            jump.play();
         }
     }
 })
