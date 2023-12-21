@@ -4,12 +4,11 @@ canvas.width = 1024;
 canvas.height = 576;
 const gravity = 0.7;
 let scrollX = 0, scrollY = 0, playerDirection = "right";
-const level = [-600,3700,450,800, 1095,1180,335,450, 1300,1390,225,450, 1390,1485,335,450];
+const level = [-600,3700,450,800, 1095,1180,335,450, 1300,1390,229,450, 1390,1485,335,450, 3855,4545,330,550, 4650,5150,214,300, 5300,10000,171,800];
 //let track = new Audio('GameTrack.ogg');
 let jump = new Audio('jump.wav');
 let squish = new Audio('squish.wav');
-let slimes = [2500,383,4,0,0,0,'Slime_move.svg',6];
-let slimeImg = new Image();
+let slimes = [2500,385,3,0,0,0,'Slime_move.svg',6, 4100,265,-4,0,0,0,'Slime_move.svg',6, 4800,149,4,0,0,0,'Slime_move.svg',6];
 let particles = [];
 let particleImg = new Image();
 particleImg.src = 'Slime_particle.svg';
@@ -100,8 +99,8 @@ class Player extends Sprite {
         if(scrollX < 0) {
             scrollX = 0;
         } 
-        if(scrollX > 4000) {
-            scrollX = 4000;
+        if(scrollX > 9000) {
+            scrollX = 9000;
         }
         for(let i = 0; i < level.length; i+=4) {
             if(this.position.x + this.width > level[i] && this.position.x < level[i+1] &&
@@ -209,8 +208,8 @@ class Player extends Sprite {
 }
 
 const sky = new Sprite({position:{x:-10,y:-200}, imageSrc: 'Sky.svg', scale: 2, scrollSpeed: 5});
-const hills = new Sprite({position:{x:-60,y:285}, imageSrc: 'Hills.svg', scale: 2, scrollSpeed: 2});
-const ground = new Sprite({position:{x:-10,y:216}, imageSrc: 'Ground.svg', scale: 2});
+const hills = new Sprite({position:{x:-60,y:240}, imageSrc: 'Hills.svg', scale: 2, scrollSpeed: 2});
+const ground = new Sprite({position:{x:-10,y:166}, imageSrc: 'Ground.svg', scale: 2});
 const player = new Player({ position:{x:-200,y:200}, imageSrc:'idle.svg', frames: 5, scale: 2, offset:{x:100,y:20},
 sprites:{idle:{imageSrc:'idle.svg',frames:5,framesHold:5}, idleLeft:{imageSrc:'idle-left.svg',frames:5,framesHold:5}, run:{imageSrc:'run.svg',frames:9,framesHold:2},
 runLeft:{imageSrc:'run-left.svg',frames:9,framesHold:2}, jump:{imageSrc:'jump.svg',frames:1}, jumpLeft:{imageSrc:'jump-left.svg',frames:1},
@@ -221,6 +220,7 @@ const pressedKeys = {right: false, left: false};
 function drawSlimes() {
     for(let i = 0; i < slimes.length; i+=8) {
         slimes[i] -= scrollX;
+        slimeImg = new Image();
         slimeImg.src = slimes[i+6];
         c.drawImage(slimeImg, slimes[i+4] * (slimeImg.width / slimes[i+7]), 0,
             slimeImg.width / slimes[i+7], slimeImg.height, slimes[i] + 500, slimes[i+1] - 20, 
@@ -250,8 +250,8 @@ function drawSlimes() {
             if(player.position.x + player.width > slimes[i] && player.position.x < slimes[i] + 80 && player.velocity.y > 0
                 && player.position.y + player.height > slimes[i+1] && player.position.y < slimes[i+1] + 20 ) {
                 slimes[i+3] = 1;
-                slimes[i+6] = 'Slime_squished.svg';
                 slimes[i+4] = 0;
+                slimes[i+6] = 'Slime_squished.svg';
                 slimes[i+7] = 1;
                 player.velocity.y = -16;
                 for(let p = 0; p < 5; p++) {
