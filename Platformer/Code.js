@@ -1,3 +1,10 @@
+/*TO DO:
+-Player damaged by slimes
+-More level design
+-Collectables
+-Score and Health Counter
+-Play Screen
+*/
 const canvas = document.querySelector("canvas");
 const c = canvas.getContext("2d");
 canvas.width = 1024;
@@ -51,9 +58,11 @@ class Sprite {
     }
     tick() {
         this.position.x -= scrollX / this.scrollSpeed;
+        this.position.y -= (scrollY - 150) / this.scrollSpeed;
         this.draw();
         this.animate();
         this.position.x += scrollX / this.scrollSpeed;
+        this.position.y += (scrollY - 150) / this.scrollSpeed;
     }
 }
 class Player extends Sprite {
@@ -79,12 +88,14 @@ class Player extends Sprite {
         if(this.position.x < -500) {
             this.position.x = -500;
         }
-        this.position.x = (this.position.x - scrollX / this.scrollSpeed) + 512;
+        this.position.x = this.position.x - scrollX + 512;
+        this.position.y = this.position.y - scrollY + 150;
         this.draw();
         this.animate();
-        this.position.x = (this.position.x + scrollX / this.scrollSpeed) - 512;
+        this.position.x = this.position.x + scrollX - 512;
+        this.position.y = this.position.y + scrollY;
         this.air++;
-        this.position.y += this.velocity.y;
+        this.position.y += this.velocity.y - 150;
         if(this.position.y > 1000) {
             this.position.x = -200;
             this.position.y = 200;
@@ -101,6 +112,10 @@ class Player extends Sprite {
         } 
         if(scrollX > 9000) {
             scrollX = 9000;
+        }
+        scrollY = this.position.y / 1.5;
+        if(scrollY > 220) {
+            scrollY = 220;
         }
         for(let i = 0; i < level.length; i+=4) {
             if(this.position.x + this.width > level[i] && this.position.x < level[i+1] &&
@@ -208,7 +223,7 @@ class Player extends Sprite {
 }
 
 const sky = new Sprite({position:{x:-10,y:-200}, imageSrc: 'Sky.svg', scale: 2, scrollSpeed: 5});
-const hills = new Sprite({position:{x:-60,y:240}, imageSrc: 'Hills.svg', scale: 2, scrollSpeed: 2});
+const hills = new Sprite({position:{x:-250,y:210}, imageSrc: 'Hills.svg', scale: 2, scrollSpeed: 2});
 const ground = new Sprite({position:{x:-10,y:166}, imageSrc: 'Ground.svg', scale: 2});
 const player = new Player({ position:{x:-200,y:200}, imageSrc:'idle.svg', frames: 5, scale: 2, offset:{x:100,y:20},
 sprites:{idle:{imageSrc:'idle.svg',frames:5,framesHold:5}, idleLeft:{imageSrc:'idle-left.svg',frames:5,framesHold:5}, run:{imageSrc:'run.svg',frames:9,framesHold:2},
@@ -220,6 +235,7 @@ const pressedKeys = {right: false, left: false};
 function drawSlimes() {
     for(let i = 0; i < slimes.length; i+=8) {
         slimes[i] -= scrollX;
+        slimes[i+1] -= scrollY - 150;
         slimeImg = new Image();
         slimeImg.src = slimes[i+6];
         c.drawImage(slimeImg, slimes[i+4] * (slimeImg.width / slimes[i+7]), 0,
@@ -234,6 +250,7 @@ function drawSlimes() {
             }
         }
         slimes[i] += scrollX;
+        slimes[i+1] += scrollY - 150;
         if(slimes[i+3] == 0) {
             slimes[i] += slimes[i+2];
             for(let s = 0; s < level.length; s+=4) {
@@ -299,8 +316,10 @@ function drawParticles() {
             }
         }
         particles[i] -= scrollX;
+        particles[i+1] -= scrollY - 150;
         c.drawImage(particleImg, 0, 0, particleImg.width, particleImg.height, particles[i] + 540, particles[i+1], particleImg.width, particleImg.height);
         particles[i] += scrollX;
+        particles[i+1] += scrollY - 150;
         particles[i+4] += 1;
         if(particles[i+4] == 120) {
             particles.splice(i,5);
