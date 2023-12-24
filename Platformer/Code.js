@@ -377,37 +377,32 @@ function gameLoop() {
     }
     player.tick();
     player.acceleration = 0;
-    if(pressedKeys.right == false && pressedKeys.left == false){
-        if(playerHit == 0) {
+    if(playerHit == 0 || (playerHit > 0 && playerHit >= 18)) {
+        if(pressedKeys.right == false && pressedKeys.left == false){
             player.switchSprite('idle');
-        } else {
-            if(playerHit >= 18) {
-                player.switchSprite('idle');
-            }
         }
-    }
-    if(pressedKeys.right) {
-        player.acceleration += 0.4;
-        playerDirection = "right";
-        player.switchSprite('run');
-    }
-    if(pressedKeys.left) {
-        player.acceleration -= 0.4;
-        playerDirection = "left";
-        player.switchSprite('run');
-    }
-    if(player.velocity.y < 0) {
-        player.switchSprite('jump');
-    }
-    if(player.velocity.y > 0) {
-        player.switchSprite('fall');
-    }
-    if(playerHit > 0 && playerHit < 18) {
+        if(pressedKeys.right) {
+            player.acceleration += 0.4;
+            playerDirection = "right";
+            player.switchSprite('run');
+        }
+        if(pressedKeys.left) {
+            player.acceleration -= 0.4;
+            playerDirection = "left";
+            player.switchSprite('run');
+        }
+        if(player.velocity.y < 0) {
+            player.switchSprite('jump');
+        }
+        if(player.velocity.y > 0) {
+            player.switchSprite('fall');
+        }
+        player.velocity.x += player.acceleration;
+        player.velocity.x *= 0.94;
+        player.collisionX();
+    } else {
         player.switchSprite('hurt');
     }
-    player.velocity.x += player.acceleration;
-    player.velocity.x *= 0.94;
-    player.collisionX();
 }
 
 gameLoop();
