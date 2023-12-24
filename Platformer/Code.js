@@ -1,5 +1,4 @@
 /*TO DO:
--Player damaged by slimes
 -More level design
 -Collectables
 -Score and Health Counter
@@ -10,15 +9,19 @@ const c = canvas.getContext("2d");
 canvas.width = 1024;
 canvas.height = 576;
 const gravity = 0.7;
-let scrollX = 0, scrollY = 0, playerDirection = "right";
+let scrollX = 0, scrollY = 0, playerDirection = "right", playerHit = 0;
 const level = [-600,3700,450,800, 1095,1180,335,450, 1300,1390,229,450, 1390,1485,335,450, 3855,4545,330,550, 4650,5150,214,300, 5300,10000,171,800];
 //let track = new Audio('GameTrack.ogg');
 let jump = new Audio('jump.wav');
 let squish = new Audio('squish.wav');
+let hit = new Audio('Player Hit.wav');
+let lose = new Audio('Game Over.mp3');
 let slimes = [2500,385,3,0,0,0,'Slime_move.svg',6, 4100,265,-4,0,0,0,'Slime_move.svg',6, 4800,149,4,0,0,0,'Slime_move.svg',6];
 let particles = [];
 let particleImg = new Image();
 particleImg.src = 'Slime_particle.svg';
+let healthDisplay = new Image();
+healthDisplay.src = 'Lives.svg';
 
 class Sprite {
     constructor({position, imageSrc, scale = 1, scrollSpeed = 1, frames = 1, offset = {x:0,y:0}}) {
@@ -72,7 +75,7 @@ class Player extends Sprite {
         this.acceleration = 0;
         this.width = 50;
         this.height = 150;
-        this.health = 100;
+        this.health = 6;
         this.currentFrame = 0;
         this.framesElapsed = 0;
         this.air = 99;
@@ -96,15 +99,17 @@ class Player extends Sprite {
         this.position.y = this.position.y + scrollY;
         this.air++;
         this.position.y += this.velocity.y - 150;
-        if(this.position.y > 1000) {
+        if(this.position.y > 1000 || this.health == 0) {
             this.position.x = -200;
             this.position.y = 200;
             this.velocity.x = 0;
             this.velocity.y = 0;
             this.acceleration = 0;
             this.air = 99;
+            this.health = 6;
             scrollX = 0;
             scrollY = 0;
+            lose.play();
         }
         scrollX = this.position.x;
         if(scrollX < 0) {
@@ -173,14 +178,12 @@ class Player extends Sprite {
                     if(this.image != this.sprites.jump.image) {
                         this.image = this.sprites.jump.image;
                         this.frames = this.sprites.jump.frames;
-                        this.framesHold = this.sprites.jump.framesHold;
                         this.currentFrame = 0;
                     }
                 } else {
                     if(this.image != this.sprites.jumpLeft.image) {
                         this.image = this.sprites.jumpLeft.image;
                         this.frames = this.sprites.jumpLeft.frames;
-                        this.framesHold = this.sprites.jumpLeft.framesHold;
                         this.currentFrame = 0;
                     }
                 }
@@ -198,6 +201,23 @@ class Player extends Sprite {
                         this.image = this.sprites.fallLeft.image;
                         this.frames = this.sprites.fallLeft.frames;
                         this.framesHold = this.sprites.fallLeft.framesHold;
+                        this.currentFrame = 0;
+                    }
+                }
+                break
+            case 'hurt':
+                if(playerDirection == "right") {
+                    if(this.image != this.sprites.hurt.image) {
+                        this.image = this.sprites.hurt.image;
+                        this.frames = this.sprites.hurt.frames;
+                        this.framesHold = this.sprites.hurt.framesHold;
+                        this.currentFrame = 0;
+                    }
+                } else {
+                    if(this.image != this.sprites.hurtLeft.image) {
+                        this.image = this.sprites.hurtLeft.image;
+                        this.frames = this.sprites.hurtLeft.frames;
+                        this.framesHold = this.sprites.hurtLeft.framesHold;
                         this.currentFrame = 0;
                     }
                 }
@@ -228,9 +248,10 @@ const ground = new Sprite({position:{x:-10,y:166}, imageSrc: 'Ground.svg', scale
 const player = new Player({ position:{x:-200,y:200}, imageSrc:'idle.svg', frames: 5, scale: 2, offset:{x:100,y:20},
 sprites:{idle:{imageSrc:'idle.svg',frames:5,framesHold:5}, idleLeft:{imageSrc:'idle-left.svg',frames:5,framesHold:5}, run:{imageSrc:'run.svg',frames:9,framesHold:2},
 runLeft:{imageSrc:'run-left.svg',frames:9,framesHold:2}, jump:{imageSrc:'jump.svg',frames:1}, jumpLeft:{imageSrc:'jump-left.svg',frames:1},
-fall:{imageSrc:'fall.svg',frames:1}, fallLeft:{imageSrc:'fall-left.svg',frames:1}} });
+fall:{imageSrc:'fall.svg',frames:1}, fallLeft:{imageSrc:'fall-left.svg',frames:1}, hurt:{imageSrc:'hurt.svg',frames:4,framesHold:6}, 
+hurtLeft:{imageSrc:'hurt-left.svg',frames:4,framesHold:6}} });
 
-const pressedKeys = {right: false, left: false};
+const pressedKeys = {right: false, left: false, h: false};
 
 function drawSlimes() {
     for(let i = 0; i < slimes.length; i+=8) {
@@ -265,7 +286,7 @@ function drawSlimes() {
                 }
             }
             if(player.position.x + player.width > slimes[i] && player.position.x < slimes[i] + 80 && player.velocity.y > 0
-                && player.position.y + player.height > slimes[i+1] && player.position.y < slimes[i+1] + 20 ) {
+                && player.position.y + player.height > slimes[i+1] && player.position.y < slimes[i+1] + 20) {
                 slimes[i+3] = 1;
                 slimes[i+4] = 0;
                 slimes[i+6] = 'Slime_squished.svg';
@@ -279,6 +300,9 @@ function drawSlimes() {
                     particles.push(0);
                     squish.play();
                 }
+            } else if(playerHit == 0 && player.position.x + player.width > slimes[i] && player.position.x < slimes[i] + 80
+                && slimes[i+1] + 60 > player.position.y && slimes[i+1] < player.position.y + player.height) {
+                playerHit = 1;
             }
         } else {
             slimes[i+3]++;
@@ -332,17 +356,35 @@ function gameLoop() {
     sky.tick();
     hills.tick();
     ground.tick();
+    c.drawImage(healthDisplay, (player.health) * (healthDisplay.width / 7), 0, healthDisplay.width / 7, 
+    healthDisplay.height, 20, 20, healthDisplay.width / 7, healthDisplay.height);
+
     if(slimes.length > 0) {
         drawSlimes();
     }
     if(particles.length > 0) {
         drawParticles();
     }
+    if(playerHit >= 1) {
+        if(playerHit == 1) {
+            player.health -= 1;
+            hit.play();
+        }
+        playerHit += 1
+        if(playerHit == 40) {
+            playerHit = 0;
+        }
+    }
     player.tick();
-
     player.acceleration = 0;
     if(pressedKeys.right == false && pressedKeys.left == false){
-        player.switchSprite('idle');
+        if(playerHit == 0) {
+            player.switchSprite('idle');
+        } else {
+            if(playerHit >= 18) {
+                player.switchSprite('idle');
+            }
+        }
     }
     if(pressedKeys.right) {
         player.acceleration += 0.4;
@@ -359,6 +401,9 @@ function gameLoop() {
     }
     if(player.velocity.y > 0) {
         player.switchSprite('fall');
+    }
+    if(playerHit > 0 && playerHit < 18) {
+        player.switchSprite('hurt');
     }
     player.velocity.x += player.acceleration;
     player.velocity.x *= 0.94;
@@ -380,6 +425,9 @@ window.addEventListener('keydown', (event) => {
             jump.play();
         }
     }
+    if(event.key == 'h') {
+        pressedKeys.h = true;
+    }
 })
 window.addEventListener('keyup', (event) => {
     if(event.key == 'd' || event.key == 'ArrowRight') {
@@ -387,5 +435,8 @@ window.addEventListener('keyup', (event) => {
     }
     if(event.key == 'a' || event.key == 'ArrowLeft') {
         pressedKeys.left = false;
+    }
+    if(event.key == 'h') {
+        pressedKeys.h = false;
     }
 })
