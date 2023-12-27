@@ -1,8 +1,6 @@
 /*TO DO:
--More level design
 -Collectables
--Score and Health Counter
--Play Screen
+-Score Counter
 */
 const canvas = document.querySelector("canvas");
 const c = canvas.getContext("2d");
@@ -10,18 +8,26 @@ canvas.width = 1024;
 canvas.height = 576;
 const gravity = 0.7;
 let scrollX = 0, scrollY = 0, playerDirection = "right", playerHit = 0;
-const level = [-600,3700,450,800, 1095,1180,335,450, 1300,1390,229,450, 1390,1485,335,450, 3855,4545,330,550, 4650,5150,214,300, 5300,10000,171,800];
+const level = [-600,3700,450,800, 1095,1180,335,450, 1300,1390,229,450, 1390,1485,335,450, 3855,4545,330,550, 4650,5150,214,300, 5300,10000,171,800,
+5914,6014,40,171, 7045,7145,40,171, 6150,6895,-115,0, 7923,8013,56,171, 8598,8688,56,171];
 //let track = new Audio('GameTrack.ogg');
 let jump = new Audio('jump.wav');
 let squish = new Audio('squish.wav');
 let hit = new Audio('Player Hit.wav');
 let lose = new Audio('Game Over.mp3');
-let slimes = [2500,385,3,0,0,0,'Slime_move.svg',6, 4100,265,-4,0,0,0,'Slime_move.svg',6, 4800,149,4,0,0,0,'Slime_move.svg',6];
+let collect = new Audio('collect.wav');
+let slimes = [2500,385,4,0,0,0,'Slime_move.svg',6, 4100,265,-4,0,0,0,'Slime_move.svg',6, 4800,149,4,0,0,0,'Slime_move.svg',6, 6100,106,-4,0,0,0,'Slime_move.svg',6,
+8200,106,4,0,0,0,'Slime_move.svg',6, 8350,106,-4,0,0,0,'Slime_move.svg',6, 8500,106,-4,0,0,0,'Slime_move.svg',6];
+let coins = [500,390,0,0,0, 600,390,0,0,0, 700,390,0,0,0, 1600,-50,0,0,0, 3400,390,0,0,0, 3550,390,0,0,0, 4800,120,0,0,0, 4900,120,0,0,0, 5000,120,0,0,0, 
+6350,-190,0,0,0, 6500,-190,0,0,0, 6650,-190,0,0,0, 6500,100,0,0,0, 6650,100,0,0,0, 8180,-180,0,0,0, 8330,-180,0,0,0, 8480,-180,0,0,0, 9400,100,0,0,0];
+let coinImage = new Image();
+coinImage.src = 'Coin.svg';
 let particles = [];
 let particleImg = new Image();
 particleImg.src = 'Slime_particle.svg';
 let healthDisplay = new Image();
 healthDisplay.src = 'Lives.svg';
+let Score = 0;
 
 class Sprite {
     constructor({position, imageSrc, scale = 1, scrollSpeed = 1, frames = 1, offset = {x:0,y:0}}) {
@@ -91,6 +97,9 @@ class Player extends Sprite {
         if(this.position.x < -500) {
             this.position.x = -500;
         }
+        if(this.position.x > 9460) {
+            this.position.x = 9460;
+        }
         this.position.x = this.position.x - scrollX + 512;
         this.position.y = this.position.y - scrollY + 150;
         this.draw();
@@ -109,6 +118,11 @@ class Player extends Sprite {
             this.health = 6;
             scrollX = 0;
             scrollY = 0;
+            Score = 0;
+            slimes = [2500,385,4,0,0,0,'Slime_move.svg',6, 4100,265,-4,0,0,0,'Slime_move.svg',6, 4800,149,4,0,0,0,'Slime_move.svg',6, 6100,106,-4,0,0,0,'Slime_move.svg',6,
+            8200,106,4,0,0,0,'Slime_move.svg',6, 8350,106,-4,0,0,0,'Slime_move.svg',6, 8500,106,-4,0,0,0,'Slime_move.svg',6];
+            coins = [500,390,0,0,0, 600,390,0,0,0, 700,390,0,0,0, 1600,-50,0,0,0, 3400,390,0,0,0, 3550,390,0,0,0, 4800,120,0,0,0, 4900,120,0,0,0, 5000,120,0,0,0, 
+            6350,-190,0,0,0, 6500,-190,0,0,0, 6650,-190,0,0,0, 6500,100,0,0,0, 6650,100,0,0,0, 8180,-180,0,0,0, 8330,-180,0,0,0, 8480,-180,0,0,0, 9400,100,0,0,0];
             lose.play();
         }
         scrollX = this.position.x;
@@ -132,7 +146,7 @@ class Player extends Sprite {
                 }
                 if(this.velocity.y < 0) {
                     this.velocity.y = 0;
-                    this.position.y = level[i+3] - this.height;
+                    this.position.y = level[i+3];
                 }
             }
         }
@@ -244,7 +258,7 @@ class Player extends Sprite {
 
 const sky = new Sprite({position:{x:-10,y:-200}, imageSrc: 'Sky.svg', scale: 2, scrollSpeed: 5});
 const hills = new Sprite({position:{x:-250,y:210}, imageSrc: 'Hills.svg', scale: 2, scrollSpeed: 2});
-const ground = new Sprite({position:{x:-10,y:166}, imageSrc: 'Ground.svg', scale: 2});
+const ground = new Sprite({position:{x:-10,y:-120}, imageSrc: 'Ground.svg', scale: 2});
 const player = new Player({ position:{x:-200,y:200}, imageSrc:'idle.svg', frames: 5, scale: 2, offset:{x:100,y:20},
 sprites:{idle:{imageSrc:'idle.svg',frames:5,framesHold:5}, idleLeft:{imageSrc:'idle-left.svg',frames:5,framesHold:5}, run:{imageSrc:'run.svg',frames:9,framesHold:2},
 runLeft:{imageSrc:'run-left.svg',frames:9,framesHold:2}, jump:{imageSrc:'jump.svg',frames:1}, jumpLeft:{imageSrc:'jump-left.svg',frames:1},
@@ -252,6 +266,41 @@ fall:{imageSrc:'fall.svg',frames:1}, fallLeft:{imageSrc:'fall-left.svg',frames:1
 hurtLeft:{imageSrc:'hurt-left.svg',frames:4,framesHold:6}} });
 
 const pressedKeys = {right: false, left: false, h: false};
+
+function drawCoins() {
+    for(let i = 0; i < coins.length; i+=5) {
+        coins[i] -= scrollX;
+        coins[i+1] -= coins[i+4];
+        coins[i+1] -= scrollY - 150;
+        c.drawImage(coinImage, coins[i+3] * (coinImage.width / 4), 0,
+        coinImage.width / 4, coinImage.height, coins[i] + 495, coins[i+1] - 20, 
+        coinImage.width / 4, coinImage.height);
+        coins[i+2]++;
+        if(coins[i+2] % 6 == 0) {
+            if(coins[i+3] < 3) {
+                coins[i+3]++;
+            } else {
+                coins[i+3] = 0;
+            }
+        }
+        coins[i] += scrollX;
+        coins[i+1] += coins[i+4];
+        coins[i+1] += scrollY - 150;
+        if(coins[i+4] == 0) {
+            if(player.position.x + player.width > coins[i] && player.position.x < coins[i] + 30
+                && coins[i+1] + 50 > player.position.y && coins[i+1] < player.position.y + player.height) {
+                coins[i+4] = 1;
+                collect.play();
+                Score += 10;
+            }
+        } else {
+            coins[i+4] += 2;
+            if(coins[i+4] == 35) {
+                coins.splice(i,5);
+            }
+        }
+    }
+}
 
 function drawSlimes() {
     for(let i = 0; i < slimes.length; i+=8) {
@@ -275,30 +324,31 @@ function drawSlimes() {
         if(slimes[i+3] == 0) {
             slimes[i] += slimes[i+2];
             for(let s = 0; s < level.length; s+=4) {
-                if(slimes[i] + 80 > level[s] && slimes[i] < level[s+1] &&
+                if(slimes[i] + 100 > level[s] && slimes[i] < level[s+1] &&
                     slimes[i+1] + 60 > level[s+2] && slimes[i+1] < level[s+3] ||
                     slimes[i] + 80 > level[s+1] - 50 && slimes[i] < level[s+1] && 
-                    slimes[i+1] < level[s+2] && slimes[i+1] + 60 > level[s+2] - 50 ||
-                    slimes[i] < level[s] + 50 && slimes[i] + 80 > level[s] && 
-                    slimes[i+1] < level[s+2] && slimes[i+1] + 60 > level[s+2] - 50) {
+                    slimes[i+1] < level[s+2] && slimes[i+1] + 60 > level[s+2] - 30 ||
+                    slimes[i] < level[s] + 30 && slimes[i] + 80 > level[s] && 
+                    slimes[i+1] < level[s+2] && slimes[i+1] + 60 > level[s+2] - 30) {
                         slimes[i+2] *= -1;
                         slimes[i] += slimes[i+2];
                 }
             }
             if(player.position.x + player.width > slimes[i] && player.position.x < slimes[i] + 80 && player.velocity.y > 0
-                && player.position.y + player.height > slimes[i+1] && player.position.y < slimes[i+1] + 20) {
+                && player.position.y + player.height > slimes[i+1] - 5 && player.position.y + player.height < slimes[i+1] + 20) {
                 slimes[i+3] = 1;
                 slimes[i+4] = 0;
                 slimes[i+6] = 'Slime_squished.svg';
                 slimes[i+7] = 1;
                 player.velocity.y = -16;
+                Score += 50;
+                squish.play();
                 for(let p = 0; p < 5; p++) {
                     particles.push(slimes[i]);
                     particles.push(slimes[i+1]);
                     particles.push(Math.random() * 17 - 8);
                     particles.push(Math.random() * 4 - 10);
                     particles.push(0);
-                    squish.play();
                 }
             } else if(playerHit == 0 && player.position.x + player.width > slimes[i] && player.position.x < slimes[i] + 80
                 && slimes[i+1] + 60 > player.position.y && slimes[i+1] < player.position.y + player.height) {
@@ -358,7 +408,9 @@ function gameLoop() {
     ground.tick();
     c.drawImage(healthDisplay, (player.health) * (healthDisplay.width / 7), 0, healthDisplay.width / 7, 
     healthDisplay.height, 20, 20, healthDisplay.width / 7, healthDisplay.height);
-
+    if(coins.length > 0) {
+        drawCoins();
+    }
     if(slimes.length > 0) {
         drawSlimes();
     }
@@ -371,7 +423,7 @@ function gameLoop() {
             hit.play();
         }
         playerHit += 1
-        if(playerHit == 40) {
+        if(playerHit == 50) {
             playerHit = 0;
         }
     }
@@ -382,12 +434,12 @@ function gameLoop() {
             player.switchSprite('idle');
         }
         if(pressedKeys.right) {
-            player.acceleration += 0.4;
+            player.acceleration += .4;
             playerDirection = "right";
             player.switchSprite('run');
         }
         if(pressedKeys.left) {
-            player.acceleration -= 0.4;
+            player.acceleration -= .4;
             playerDirection = "left";
             player.switchSprite('run');
         }
@@ -403,6 +455,13 @@ function gameLoop() {
     } else {
         player.switchSprite('hurt');
     }
+    document.getElementById("scoreDisplay").innerHTML = "Score: ";
+    if(String(Score).length == 1) {
+        document.getElementById("scoreDisplay").innerHTML += "00";
+    } else if(String(Score).length == 2) {
+        document.getElementById("scoreDisplay").innerHTML += "0";
+    }
+    document.getElementById("scoreDisplay").innerHTML += String(Score);
 }
 
 gameLoop();

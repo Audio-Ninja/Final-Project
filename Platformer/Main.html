@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <head>
 <title>Platformer Game</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Press Start 2P">
 <style>
     * {
         box-sizing: border-box;
@@ -12,8 +13,9 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        height: 600px;
     }
-    h1, p {
+    .text {
         text-align: center;
         font-family: sans-serif;
         color: white;
@@ -22,14 +24,21 @@
     p {
         font-weight: bold;
     }
+    #scoreDisplay {
+        position: relative;
+        right: 300px;
+        font-family: "Press Start 2P";
+        bottom: 250px;
+    }
 </style>
 </head>
 <html>
 <body>
-    <h1>Platformer Game</h1>
-    <p>Move with WASD or arrow keys; jump on slimes to squish them.</p>
+    <h1 class="text">Platformer Game</h1>
+    <p class="text">Move with WASD or arrow keys; jump on slimes to squish them.</p>
     <div>
         <canvas></canvas>
+        <p id="scoreDisplay">Score: 000</p>
     </div>
     <script src="Code.js"></script>
 </body>
