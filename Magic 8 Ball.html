@@ -1,7 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <title>Magic 8 Ball - Final Project</title>
 <style>
+    #container {
+        margin: 30px;
+    }
     #ball {
         position: fixed;
         width: 300px;
@@ -52,13 +56,15 @@
 </style>
 </head>
 <body>
-    <h2>Magic 8 Ball</h2>
-    <p>Ask a yes/no question, click the ball, and receive your answer!</p>
-    <div id="ball" onclick="answer()">
-        <div id="circle"></div>
-        <div id="triangle"></div>
-        <p id="text">8</p>
-        <p id="prediction"></p>
+    <div id="container">
+        <h2>Magic 8 Ball</h2>
+        <p>Ask a yes/no question, click the ball, and receive your answer!</p>
+        <div id="ball" onclick="answer()">
+            <div id="circle"></div>
+            <div id="triangle"></div>
+            <p id="text">8</p>
+            <p id="prediction"></p>
+        </div>
     </div>
 <script>
     let state = 0;

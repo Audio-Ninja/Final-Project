@@ -1,7 +1,3 @@
-/*TO DO:
--Collectables
--Score Counter
-*/
 const canvas = document.querySelector("canvas");
 const c = canvas.getContext("2d");
 canvas.width = 1024;
@@ -256,7 +252,7 @@ class Player extends Sprite {
     }
 }
 
-const sky = new Sprite({position:{x:-10,y:-200}, imageSrc: 'Sky.svg', scale: 2, scrollSpeed: 5});
+const sky = new Sprite({position:{x:-10,y:-220}, imageSrc: 'Sky.svg', scale: 2, scrollSpeed: 5});
 const hills = new Sprite({position:{x:-250,y:210}, imageSrc: 'Hills.svg', scale: 2, scrollSpeed: 2});
 const ground = new Sprite({position:{x:-10,y:-120}, imageSrc: 'Ground.svg', scale: 2});
 const player = new Player({ position:{x:-200,y:200}, imageSrc:'idle.svg', frames: 5, scale: 2, offset:{x:100,y:20},
