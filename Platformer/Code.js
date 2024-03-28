@@ -6,7 +6,6 @@ const gravity = 0.7;
 let scrollX = 0, scrollY = 0, playerDirection = "right", playerHit = 0;
 const level = [-600,3700,450,800, 1095,1180,335,450, 1300,1390,229,450, 1390,1485,335,450, 3855,4545,330,550, 4650,5150,214,300, 5300,10000,171,800,
 5914,6014,40,171, 7045,7145,40,171, 6150,6895,-115,0, 7923,8013,56,171, 8598,8688,56,171];
-//let track = new Audio('GameTrack.ogg');
 let jump = new Audio('jump.wav');
 let squish = new Audio('squish.wav');
 let hit = new Audio('Player Hit.wav');
